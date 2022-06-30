@@ -9,18 +9,18 @@ import java.time.Instant;
 public class RecipeMapper {
 
     public static Recipe fromDto (RecipeDto recipeDto){
-        Recipe recipe = new Recipe();
-        recipe.setTitle(recipeDto.title());
-        recipe.setInstructions(recipeDto.instructions());
-        recipe.setServings(recipeDto.servings());
-        recipe.setVegetarian(recipeDto.vegetarian());
-        recipe.setCreatedAt(Instant.now());
-        recipe.setIngredients(recipeDto.ingredients().stream().map(ingredientName -> {
-            Ingredient ingredient = new Ingredient();
-            ingredient.setName(ingredientName);
-            return ingredient;
-        }).toList());
-        return recipe;
+        return Recipe.builder()
+                .title(recipeDto.title())
+                .instructions(recipeDto.instructions())
+                .servings(recipeDto.servings())
+                .vegetarian(recipeDto.vegetarian())
+                .createdAt(Instant.now())
+                .ingredients(recipeDto.ingredients().stream().map(ingredientName -> {
+                    Ingredient ingredient = new Ingredient();
+                    ingredient.setName(ingredientName);
+                    return ingredient;
+                }).toList())
+                .build();
     }
 
     public static RecipeDto toDto (Recipe recipe){
