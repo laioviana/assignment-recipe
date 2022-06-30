@@ -6,17 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import java.util.Optional;
-
 public interface RecipeRepository extends JpaRepository<Recipe, Integer> {
-/*    @Query("""
-            SELECT r FROM Recipe r INNER JOIN r.ingredients ingredients
-            WHERE (?1 is null OR r.title LIKE LOWER(CONCAT('%', ?1, '%')))
-            AND (?2 IS NULL or r.vegetarian = ?2)
-            AND r.servings = ?3
-            AND r.instructions LIKE CONCAT('%', ?4, '%') 
-            AND ingredients.name LIKE CONCAT('%', ?5, '%')""")
-    Page<Recipe> findAllByFilter(String title, Boolean vegetarian, Integer servings, String instructions, String ingredient, Pageable pageable);*/
     @Query("""
                 SELECT r FROM Recipe r INNER JOIN r.ingredients ingredients
                 WHERE (?1 IS NULL OR r.title LIKE LOWER(CONCAT('%', ?1, '%')))
