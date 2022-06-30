@@ -9,5 +9,5 @@ public record RecipeDto(@NotNull String title,
                         @NotNull Boolean vegetarian,
                         @NotNull String instructions,
                         @NotNull List<String> ingredients,
-                        @NotNull Instant createdAt) {
+                       Instant createdAt) {
 }

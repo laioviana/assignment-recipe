@@ -19,7 +19,6 @@ import java.util.List;
 public class Recipe {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @NotNull
     @Column(name = "id", nullable = false)
     private Integer id;
 
