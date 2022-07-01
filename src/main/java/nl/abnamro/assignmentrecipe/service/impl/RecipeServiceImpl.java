@@ -41,12 +41,6 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     @Override
-    public Optional<RecipeDto> findRecipeById(Integer recipeId) {
-        return recipeRepository.findById(recipeId)
-                .map(RecipeMapper::toDto);
-    }
-
-    @Override
     public Optional<RecipeDto> updateRecipe(Integer recipeId, UpdateRecipeDto recipeDto) {
         return recipeRepository.findById(recipeId)
                 .map(recipe -> {

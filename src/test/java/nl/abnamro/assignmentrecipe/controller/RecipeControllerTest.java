@@ -3,6 +3,7 @@ package nl.abnamro.assignmentrecipe.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.abnamro.assignmentrecipe.model.dto.RecipeDto;
 import nl.abnamro.assignmentrecipe.service.RecipeService;
+import nl.abnamro.assignmentrecipe.util.CreationUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -38,7 +39,7 @@ public class RecipeControllerTest {
     @Test
     public void givenRecipeDtoObject_whenCreateRecipe_thenReturnSavedRecipe() throws Exception {
 
-        RecipeDto recipeDto = new RecipeDto("Hamburger", 1, Boolean.FALSE, "Add meat to the bread", List.of("Meat", "Bread"), null);
+        RecipeDto recipeDto = CreationUtils.createRecipeDtoHamburger();
 
         when(recipeService.createRecipe(any())).thenReturn(Optional.of(new RecipeDto("Hamburger", 1, Boolean.FALSE, "Add meat to the bread", List.of("Meat", "Bread"), Instant.now())));
 
@@ -63,7 +64,7 @@ public class RecipeControllerTest {
 
     @Test
     public void givenRecipeDtoObjectWithNullValue_whenCreateRecipe_thenReturnBadRequest() throws Exception {
-        RecipeDto recipeDto = new RecipeDto("Hamburger", 1, null, "Add meat to the bread", List.of("Meat", "Bread"), null);
+        RecipeDto recipeDto = new RecipeDto(null, 1, Boolean.FALSE, "Add meat to the bread", List.of("Meat", "Bread"), null);
 
         ResultActions response = mockMvc.perform(post("/recipe")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -76,8 +77,8 @@ public class RecipeControllerTest {
     @Test
     public void givenListOfRecipes_whenGetAllRecipes_thenReturnRecipesList() throws Exception {
         List<RecipeDto> listOfRecipes = new ArrayList<>();
-        listOfRecipes.add(new RecipeDto("Hamburger", 1 ,Boolean.FALSE ,"Add meat to the bread", List.of("Meat"),Instant.now()));
-        listOfRecipes.add(new RecipeDto("Pizza", 3 ,Boolean.TRUE ,"Add dough with cheese and tomato souce", List.of("Tomato Sauce"),Instant.now()));
+        listOfRecipes.add(CreationUtils.createRecipeDtoHamburger());
+        listOfRecipes.add(CreationUtils.createRecipeDtoPizza());
         when(recipeService.listAllRecipes(any(),any())).thenReturn(new PageImpl<>(listOfRecipes));
 
         ResultActions response = mockMvc.perform(get("/recipe"));
@@ -90,7 +91,7 @@ public class RecipeControllerTest {
 
     @Test
     public void givenRecipeId_whenGetRecipeById_thenReturnRecipeDtoObject() throws Exception {
-        RecipeDto recipeDto = new RecipeDto("Hamburger", 1 ,Boolean.FALSE ,"Add meat to the bread", List.of("Meat"),Instant.now());
+        RecipeDto recipeDto = CreationUtils.createRecipeDtoHamburger();
         when(recipeService.getRecipeById(1)).thenReturn(Optional.of(recipeDto));
         ResultActions response = mockMvc.perform(get("/recipe/{id}", 1));
 
@@ -143,11 +144,11 @@ public class RecipeControllerTest {
 
     @Test
     public void givenUpdatedRecipeWithWrongId_whenUpdateRecipe_thenReturnNotFound() throws Exception {
-        RecipeDto updatedRecipe = new RecipeDto("Veggie Hamburger", 1, Boolean.TRUE,"Add soy burger to the bread", List.of("Soy Burger"), null);
+
 
         ResultActions response = mockMvc.perform(put("/recipe/{id}", 12)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(asJsonString(updatedRecipe)));
+                .content(asJsonString(CreationUtils.createRecipeDtoHamburger())));
 
         response.andExpect(status().isNotFound())
                 .andDo(print());
@@ -164,9 +165,9 @@ public class RecipeControllerTest {
     @Test
     public void givenListOfRecipes_whenGetAllRecipesWithFilter_thenReturnRightRecipes() throws Exception {
 
-        RecipeDto hamburgerRecipe = new RecipeDto("Hamburger", 1 ,Boolean.FALSE ,"Add meat to the bread", List.of("Meat"),Instant.now());
-        RecipeDto pizzaRecipe = new RecipeDto("Pizza", 3 ,Boolean.TRUE ,"Add dough with cheese and tomato souce", List.of("Tomato Sauce"),Instant.now());
-        RecipeDto carbonaraRecipe = new RecipeDto("Carbonara Spaghetti", 4 ,Boolean.FALSE ,"Add pasta to egg and bacon", List.of("Pasta"),Instant.now());
+        RecipeDto hamburgerRecipe = CreationUtils.createRecipeDtoHamburger();
+        RecipeDto pizzaRecipe = CreationUtils.createRecipeDtoPizza();
+        RecipeDto carbonaraRecipe = CreationUtils.createRecipeDtoCarbonara();
 
         when(recipeService.listAllRecipesByFilter(eq(Optional.of("hamb")),eq(Optional.empty()),eq(Optional.empty()),eq(Optional.empty()),eq(Optional.empty()),any(),any(),any())).thenReturn(new PageImpl<>(List.of(hamburgerRecipe)));
         when(recipeService.listAllRecipesByFilter(eq(Optional.empty()),eq(Optional.of(Boolean.TRUE)),eq(Optional.empty()),eq(Optional.empty()),eq(Optional.empty()),any(),any(),any())).thenReturn(new PageImpl<>(List.of(pizzaRecipe)));

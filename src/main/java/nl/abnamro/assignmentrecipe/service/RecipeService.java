@@ -11,8 +11,6 @@ public interface RecipeService {
 
     Page<RecipeDto> listAllRecipes(Integer page, Integer size);
 
-    Optional<RecipeDto> findRecipeById(Integer recipeId);
-
     Optional<RecipeDto> updateRecipe(Integer recipeId, UpdateRecipeDto recipeDto);
 
     Optional<RecipeDto> getRecipeById(Integer recipeId);
