@@ -1,15 +1,13 @@
 package nl.abnamro.assignmentrecipe.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import nl.abnamro.assignmentrecipe.model.Ingredient;
-import nl.abnamro.assignmentrecipe.model.Recipe;
 import nl.abnamro.assignmentrecipe.model.dto.RecipeDto;
-import nl.abnamro.assignmentrecipe.repository.RecipeRepository;
-import org.junit.jupiter.api.BeforeEach;
+import nl.abnamro.assignmentrecipe.service.RecipeService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -17,40 +15,36 @@ import org.springframework.test.web.servlet.ResultActions;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@AutoConfigureMockMvc
+@WebMvcTest(RecipeController.class)
 public class RecipeControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
-    private RecipeRepository recipeRepository;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @BeforeEach
-    void setup(){
-        recipeRepository.deleteAll();
-    }
+    @MockBean
+    private RecipeService recipeService;
 
     @Test
     public void givenRecipeDtoObject_whenCreateRecipe_thenReturnSavedRecipe() throws Exception {
 
         RecipeDto recipeDto = new RecipeDto("Hamburger", 1, Boolean.FALSE, "Add meat to the bread", List.of("Meat", "Bread"), null);
 
+        when(recipeService.createRecipe(any())).thenReturn(Optional.of(new RecipeDto("Hamburger", 1, Boolean.FALSE, "Add meat to the bread", List.of("Meat", "Bread"), Instant.now())));
+
         ResultActions response = mockMvc.perform(post("/recipe")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(recipeDto)));
+                .content(asJsonString(recipeDto)));
 
         response.andDo(print()).
                 andExpect(status().isCreated())
@@ -73,7 +67,7 @@ public class RecipeControllerTest {
 
         ResultActions response = mockMvc.perform(post("/recipe")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(recipeDto)));
+                .content(asJsonString(recipeDto)));
 
         response.andDo(print())
                  .andExpect(status().isBadRequest());
@@ -81,10 +75,10 @@ public class RecipeControllerTest {
 
     @Test
     public void givenListOfRecipes_whenGetAllRecipes_thenReturnRecipesList() throws Exception {
-        List<Recipe> listOfRecipes = new ArrayList<>();
-        listOfRecipes.add(Recipe.builder().title("Hamburger").servings(1).vegetarian(Boolean.FALSE).instructions("Add meat to the bread").ingredients(List.of(Ingredient.builder().name("Meat").build())).createdAt(Instant.now()).build());
-        listOfRecipes.add(Recipe.builder().title("Pizza").servings(3).vegetarian(Boolean.TRUE).instructions("Add dough with cheese and tomato souce").ingredients(List.of(Ingredient.builder().name("Tomato Sauce").build())).createdAt(Instant.now()).build());
-        recipeRepository.saveAll(listOfRecipes);
+        List<RecipeDto> listOfRecipes = new ArrayList<>();
+        listOfRecipes.add(new RecipeDto("Hamburger", 1 ,Boolean.FALSE ,"Add meat to the bread", List.of("Meat"),Instant.now()));
+        listOfRecipes.add(new RecipeDto("Pizza", 3 ,Boolean.TRUE ,"Add dough with cheese and tomato souce", List.of("Tomato Sauce"),Instant.now()));
+        when(recipeService.listAllRecipes(any(),any())).thenReturn(new PageImpl<>(listOfRecipes));
 
         ResultActions response = mockMvc.perform(get("/recipe"));
 
@@ -96,23 +90,22 @@ public class RecipeControllerTest {
 
     @Test
     public void givenRecipeId_whenGetRecipeById_thenReturnRecipeDtoObject() throws Exception {
-        Recipe recipe = Recipe.builder().title("Hamburger").servings(1).vegetarian(Boolean.FALSE).instructions("Add meat to the bread").ingredients(List.of(Ingredient.builder().name("Meat").build())).createdAt(Instant.now()).build();
-        recipeRepository.save(recipe);
-
-        ResultActions response = mockMvc.perform(get("/recipe/{id}", recipe.getId()));
+        RecipeDto recipeDto = new RecipeDto("Hamburger", 1 ,Boolean.FALSE ,"Add meat to the bread", List.of("Meat"),Instant.now());
+        when(recipeService.getRecipeById(1)).thenReturn(Optional.of(recipeDto));
+        ResultActions response = mockMvc.perform(get("/recipe/{id}", 1));
 
         response.andExpect(status().isOk())
                 .andDo(print())
                 .andExpect(jsonPath("$.title",
-                        is(recipe.getTitle())))
+                        is(recipeDto.title())))
                 .andExpect(jsonPath("$.servings",
-                        is(recipe.getServings())))
+                        is(recipeDto.servings())))
                 .andExpect(jsonPath("$.vegetarian",
-                        is(recipe.getVegetarian())))
+                        is(recipeDto.vegetarian())))
                 .andExpect(jsonPath("$.instructions",
-                        is(recipe.getInstructions())))
+                        is(recipeDto.instructions())))
                 .andExpect(jsonPath("$.ingredients.size()",
-                        is(recipe.getIngredients().size())));
+                        is(recipeDto.ingredients().size())));
 
     }
 
@@ -127,15 +120,13 @@ public class RecipeControllerTest {
 
     @Test
     public void givenUpdatedRecipe_whenUpdateRecipe_thenReturnUpdateRecipeDtoObject() throws Exception {
-
-        Recipe savedRecipe = Recipe.builder().title("Hamburger").servings(1).vegetarian(Boolean.FALSE).instructions("Add meat to the bread").ingredients(List.of(Ingredient.builder().name("Meat").build())).createdAt(Instant.now()).build();
-        recipeRepository.save(savedRecipe);
-
         RecipeDto updatedRecipe = new RecipeDto("Veggie Hamburger", 1, Boolean.TRUE,"Add soy burger to the bread", List.of("Soy Burger"), null);
 
-        ResultActions response = mockMvc.perform(put("/recipe/{id}", savedRecipe.getId())
+        when(recipeService.updateRecipe(any(),any())).thenReturn(Optional.of(updatedRecipe));
+
+        ResultActions response = mockMvc.perform(put("/recipe/{id}", 1)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(updatedRecipe)));
+                .content(asJsonString(updatedRecipe)));
 
         response.andExpect(status().isOk())
                 .andDo(print())
@@ -148,17 +139,15 @@ public class RecipeControllerTest {
                 .andExpect(jsonPath("$.instructions",
                         is(updatedRecipe.instructions())));
     }
+
+
     @Test
     public void givenUpdatedRecipeWithWrongId_whenUpdateRecipe_thenReturnNotFound() throws Exception {
-
-        Recipe savedRecipe = Recipe.builder().title("Hamburger").servings(1).vegetarian(Boolean.FALSE).instructions("Add meat to the bread").ingredients(List.of(Ingredient.builder().name("Meat").build())).createdAt(Instant.now()).build();
-        recipeRepository.save(savedRecipe);
-
         RecipeDto updatedRecipe = new RecipeDto("Veggie Hamburger", 1, Boolean.TRUE,"Add soy burger to the bread", List.of("Soy Burger"), null);
 
-        ResultActions response = mockMvc.perform(put("/recipe/{id}", 1)
+        ResultActions response = mockMvc.perform(put("/recipe/{id}", 12)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(updatedRecipe)));
+                .content(asJsonString(updatedRecipe)));
 
         response.andExpect(status().isNotFound())
                 .andDo(print());
@@ -166,10 +155,7 @@ public class RecipeControllerTest {
 
     @Test
     public void givenRecipeId_whenDeleteRecipe_thenReturnNoContent() throws Exception {
-        Recipe recipe = Recipe.builder().title("Hamburger").servings(1).vegetarian(Boolean.FALSE).instructions("Add meat to the bread").ingredients(List.of(Ingredient.builder().name("Meat").build())).createdAt(Instant.now()).build();
-        recipeRepository.save(recipe);
-
-        ResultActions response = mockMvc.perform(delete("/recipe/{id}", recipe.getId()));
+        ResultActions response = mockMvc.perform(delete("/recipe/{id}", 1));
 
         response.andExpect(status().isNoContent())
                 .andDo(print());
@@ -178,46 +164,49 @@ public class RecipeControllerTest {
     @Test
     public void givenListOfRecipes_whenGetAllRecipesWithFilter_thenReturnRightRecipes() throws Exception {
 
-        Recipe hamburgerRecipe = Recipe.builder().title("Hamburger").servings(1).vegetarian(Boolean.FALSE).instructions("Add meat to the bread").ingredients(List.of(Ingredient.builder().name("Meat").build())).createdAt(Instant.now()).build();
-        Recipe pizzaRecipe = Recipe.builder().title("Pizza").servings(3).vegetarian(Boolean.TRUE).instructions("Add dough with cheese and tomato souce").ingredients(List.of(Ingredient.builder().name("Tomato Sauce").build())).createdAt(Instant.now()).build();
-        Recipe carbonaraRecipe = Recipe.builder().title("Carbonara Spaghetti").servings(4).vegetarian(Boolean.FALSE).instructions("Add pasta to egg and bacon").ingredients(List.of(Ingredient.builder().name("Pasta").build())).createdAt(Instant.now()).build();
-        recipeRepository.saveAll(List.of(hamburgerRecipe, pizzaRecipe, carbonaraRecipe));
+        RecipeDto hamburgerRecipe = new RecipeDto("Hamburger", 1 ,Boolean.FALSE ,"Add meat to the bread", List.of("Meat"),Instant.now());
+        RecipeDto pizzaRecipe = new RecipeDto("Pizza", 3 ,Boolean.TRUE ,"Add dough with cheese and tomato souce", List.of("Tomato Sauce"),Instant.now());
+        RecipeDto carbonaraRecipe = new RecipeDto("Carbonara Spaghetti", 4 ,Boolean.FALSE ,"Add pasta to egg and bacon", List.of("Pasta"),Instant.now());
 
+        when(recipeService.listAllRecipesByFilter(eq(Optional.of("hamb")),eq(Optional.empty()),eq(Optional.empty()),eq(Optional.empty()),eq(Optional.empty()),any(),any(),any())).thenReturn(new PageImpl<>(List.of(hamburgerRecipe)));
+        when(recipeService.listAllRecipesByFilter(eq(Optional.empty()),eq(Optional.of(Boolean.TRUE)),eq(Optional.empty()),eq(Optional.empty()),eq(Optional.empty()),any(),any(),any())).thenReturn(new PageImpl<>(List.of(pizzaRecipe)));
+        when(recipeService.listAllRecipesByFilter(eq(Optional.empty()),eq(Optional.empty()),eq(Optional.empty()),eq(Optional.of("bacon")),eq(Optional.empty()),any(),any(),any())).thenReturn(new PageImpl<>(List.of(carbonaraRecipe)));
+        when(recipeService.listAllRecipesByFilter(eq(Optional.empty()),eq(Optional.empty()),eq(Optional.empty()),eq(Optional.empty()),eq(Optional.of("meat")),eq(Boolean.FALSE),any(),any())).thenReturn(new PageImpl<>(List.of(pizzaRecipe,carbonaraRecipe)));
         ResultActions response = mockMvc.perform(get("/recipe/filter?title=hamb"));
         response.andExpect(status().isOk())
                 .andDo(print())
                 .andExpect(jsonPath("$.content[0].title",
-                        is(hamburgerRecipe.getTitle())))
+                        is(hamburgerRecipe.title())))
                 .andExpect(jsonPath("$.content[0].servings",
-                        is(hamburgerRecipe.getServings())))
+                        is(hamburgerRecipe.servings())))
                 .andExpect(jsonPath("$.content[0].vegetarian",
-                        is(hamburgerRecipe.getVegetarian())))
+                        is(hamburgerRecipe.vegetarian())))
                 .andExpect(jsonPath("$.content[0].instructions",
-                        is(hamburgerRecipe.getInstructions())));
+                        is(hamburgerRecipe.instructions())));
 
         response = mockMvc.perform(get("/recipe/filter?vegetarian=true"));
         response.andExpect(status().isOk())
                 .andDo(print())
                 .andExpect(jsonPath("$.content[0].title",
-                        is(pizzaRecipe.getTitle())))
+                        is(pizzaRecipe.title())))
                 .andExpect(jsonPath("$.content[0].servings",
-                        is(pizzaRecipe.getServings())))
+                        is(pizzaRecipe.servings())))
                 .andExpect(jsonPath("$.content[0].vegetarian",
-                        is(pizzaRecipe.getVegetarian())))
+                        is(pizzaRecipe.vegetarian())))
                 .andExpect(jsonPath("$.content[0].instructions",
-                        is(pizzaRecipe.getInstructions())));
+                        is(pizzaRecipe.instructions())));
 
         response = mockMvc.perform(get("/recipe/filter?instructions=bacon"));
         response.andExpect(status().isOk())
                 .andDo(print())
                 .andExpect(jsonPath("$.content[0].title",
-                        is(carbonaraRecipe.getTitle())))
+                        is(carbonaraRecipe.title())))
                 .andExpect(jsonPath("$.content[0].servings",
-                        is(carbonaraRecipe.getServings())))
+                        is(carbonaraRecipe.servings())))
                 .andExpect(jsonPath("$.content[0].vegetarian",
-                        is(carbonaraRecipe.getVegetarian())))
+                        is(carbonaraRecipe.vegetarian())))
                 .andExpect(jsonPath("$.content[0].instructions",
-                        is(carbonaraRecipe.getInstructions())));
+                        is(carbonaraRecipe.instructions())));
 
         response = mockMvc.perform(get("/recipe/filter?ingredient=meat&includeIngredient=false"));
         response.andExpect(status().isOk())
@@ -226,5 +215,13 @@ public class RecipeControllerTest {
                         is(2)));
     }
 
-
+    public static String asJsonString(final Object obj) {
+        try {
+            final ObjectMapper mapper = new ObjectMapper();
+            final String jsonContent = mapper.writeValueAsString(obj);
+            return jsonContent;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
