@@ -1,6 +1,5 @@
 package nl.abnamro.assignmentrecipe.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.abnamro.assignmentrecipe.model.Recipe;
 import nl.abnamro.assignmentrecipe.model.dto.RecipeDto;
 import nl.abnamro.assignmentrecipe.repository.IngredientRepository;
