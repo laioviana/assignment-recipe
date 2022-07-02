@@ -82,14 +82,15 @@ public class RecipeServiceImpl implements RecipeService {
                 .map(RecipeMapper::toDto);
     }
 
-    private void updateIngredient(Recipe recipe, List<String> ingredients) {
+    private List<Ingredient> updateIngredient(Recipe recipe, List<String> ingredients) {
         ingredientRepository.deleteAll(ingredientRepository.findAllByRecipe_Id(recipe.getId()));
-        ingredients.stream().map(ingredient -> {
+        List<Ingredient> ingredientsList = ingredients.stream().map(ingredient -> {
             Ingredient newIngredient = new Ingredient();
             newIngredient.setRecipe(recipe);
             newIngredient.setName(ingredient);
-            return ingredientRepository.save(newIngredient);
-        });
+            return newIngredient;
+        }).toList();
+        return ingredientRepository.saveAll(ingredientsList);
     }
 
 
