@@ -14,6 +14,9 @@ You can also access the swagger ui in [http://localhost:8080/swagger-ui/](http:/
 Also a postman collection.
 
 [![Run in Postman](https://run.pstmn.io/button.svg)](https://god.gw.postman.com/run-collection/7189585-9d615531-fe55-4e6a-bb20-7197bebd98bf?action=collection%2Ffork&collection-url=entityId%3D7189585-9d615531-fe55-4e6a-bb20-7197bebd98bf%26entityType%3Dcollection%26workspaceId%3Dfef96d01-1d56-4d4b-ab3d-8e11eb2234d9)
+
+For next steps with the assigment I would like move the DB to Azure Cosmo DB.
+
 # API Documentation
 
 ## GET /recipe
@@ -135,4 +138,3 @@ Also a postman collection.
 |---|---|---|
 |200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|successful operation|
 |400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|wrong input parameters|
-
