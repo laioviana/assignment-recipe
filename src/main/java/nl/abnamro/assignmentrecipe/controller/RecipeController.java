@@ -43,7 +43,7 @@ public class RecipeController {
     }
 
     @GetMapping("/{recipeId}")
-    public ResponseEntity<RecipeDto> getRecipeById(@PathVariable Integer recipeId) {
+    public ResponseEntity<RecipeDto> getRecipeById(@PathVariable Long recipeId) {
         log.info("Listing recipe with id: {}", recipeId);
         return recipeService.getRecipeById(recipeId)
                 .map(ResponseEntity::ok)
@@ -58,7 +58,7 @@ public class RecipeController {
     }
 
     @PutMapping("/{recipeId}")
-    public ResponseEntity<RecipeDto> updateRecipe(@PathVariable Integer recipeId, @Valid @RequestBody UpdateRecipeDto updateRecipeDto) {
+    public ResponseEntity<RecipeDto> updateRecipe(@PathVariable Long recipeId, @Valid @RequestBody UpdateRecipeDto updateRecipeDto) {
         log.info("Updating recipe {}.", recipeId);
         return recipeService.updateRecipe(recipeId, updateRecipeDto)
                 .map(ResponseEntity::ok)
@@ -67,7 +67,7 @@ public class RecipeController {
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping(value = "/{recipeId}")
-    public void deleteRecipe(@PathVariable Integer recipeId) {
+    public void deleteRecipe(@PathVariable Long recipeId) {
         log.info("Deleting recipe with id = {}.", recipeId);
         recipeService.deleteRecipe(recipeId);
     }

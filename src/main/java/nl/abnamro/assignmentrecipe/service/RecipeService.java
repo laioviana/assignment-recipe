@@ -11,11 +11,11 @@ public interface RecipeService {
 
     Page<RecipeDto> listAllRecipes(Integer page, Integer size);
 
-    Optional<RecipeDto> updateRecipe(Integer recipeId, UpdateRecipeDto recipeDto);
+    Optional<RecipeDto> updateRecipe(Long recipeId, UpdateRecipeDto recipeDto);
 
-    Optional<RecipeDto> getRecipeById(Integer recipeId);
+    Optional<RecipeDto> getRecipeById(Long recipeId);
 
     Page<RecipeDto> listAllRecipesByFilter(Optional<String> title, Optional<Boolean> vegetarian, Optional<Integer> servings, Optional<String> instructions, Optional<String> ingredient, Boolean includeIngredient, Integer page, Integer size);
 
-    void deleteRecipe(Integer recipeId);
+    void deleteRecipe(Long recipeId);
 }

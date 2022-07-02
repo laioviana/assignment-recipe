@@ -28,7 +28,7 @@ public class CreationUtils {
 
     public static Recipe createRecipeHamburger(){
         return Recipe.builder()
-                .id(1)
+                .id(1L)
                 .title("Hamburger")
                 .servings(1)
                 .vegetarian(Boolean.FALSE)
@@ -40,7 +40,7 @@ public class CreationUtils {
 
     public static Recipe createRecipePizza(){
         return Recipe.builder()
-                .id(2)
+                .id(2L)
                 .title("Pizza")
                 .servings(3)
                 .vegetarian(Boolean.TRUE)

@@ -6,7 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-public interface RecipeRepository extends JpaRepository<Recipe, Integer> {
+public interface RecipeRepository extends JpaRepository<Recipe, Long> {
     @Query("""
                 SELECT r FROM Recipe r INNER JOIN r.ingredients ingredients
                 WHERE (?1 IS NULL OR r.title LIKE LOWER(CONCAT('%', ?1, '%')))

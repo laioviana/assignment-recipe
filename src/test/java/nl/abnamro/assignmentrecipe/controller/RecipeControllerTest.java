@@ -92,7 +92,7 @@ public class RecipeControllerTest {
     @Test
     public void givenRecipeId_whenGetRecipeById_thenReturnRecipeDtoObject() throws Exception {
         RecipeDto recipeDto = CreationUtils.createRecipeDtoHamburger();
-        when(recipeService.getRecipeById(1)).thenReturn(Optional.of(recipeDto));
+        when(recipeService.getRecipeById(1L)).thenReturn(Optional.of(recipeDto));
         ResultActions response = mockMvc.perform(get("/recipe/{id}", 1));
 
         response.andExpect(status().isOk())

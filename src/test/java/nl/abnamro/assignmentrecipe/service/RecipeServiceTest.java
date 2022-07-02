@@ -52,7 +52,7 @@ public class RecipeServiceTest {
         Recipe recipeHamburger = CreationUtils.createRecipeHamburger();
         when(recipeRepository.save(any())).thenReturn(recipeHamburger);
         when(recipeRepository.findById(any())).thenReturn(Optional.ofNullable(recipeHamburger));
-        final RecipeDto result = recipeService.updateRecipe(1,CreationUtils.createUpdateRecipeDtoHamburger()).get();
+        final RecipeDto result = recipeService.updateRecipe(1L,CreationUtils.createUpdateRecipeDtoHamburger()).get();
         assertEquals(recipeHamburger.getTitle(), result.title());
         assertEquals(recipeHamburger.getServings(), result.servings());
         assertEquals(recipeHamburger.getInstructions(), result.instructions());
@@ -64,7 +64,7 @@ public class RecipeServiceTest {
     void getRecipeById() {
         Recipe recipeHamburger = CreationUtils.createRecipeHamburger();
         when(recipeRepository.findById(any())).thenReturn(Optional.ofNullable(recipeHamburger));
-        final RecipeDto result = recipeService.getRecipeById(1).get();
+        final RecipeDto result = recipeService.getRecipeById(1L).get();
         assertEquals(recipeHamburger.getTitle(), result.title());
         assertEquals(recipeHamburger.getServings(), result.servings());
         assertEquals(recipeHamburger.getInstructions(), result.instructions());

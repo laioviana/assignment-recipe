@@ -41,7 +41,7 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     @Override
-    public Optional<RecipeDto> updateRecipe(Integer recipeId, UpdateRecipeDto recipeDto) {
+    public Optional<RecipeDto> updateRecipe(Long recipeId, UpdateRecipeDto recipeDto) {
         return recipeRepository.findById(recipeId)
                 .map(recipe -> {
                     recipe.setTitle(recipeDto.title().orElse(recipe.getTitle()));
@@ -54,13 +54,13 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     @Override
-    public Optional<RecipeDto> getRecipeById(Integer recipeId) {
+    public Optional<RecipeDto> getRecipeById(Long recipeId) {
         return recipeRepository.findById(recipeId)
                 .map(RecipeMapper::toDto);
     }
 
     @Override
-    public void deleteRecipe(Integer recipeId) {
+    public void deleteRecipe(Long recipeId) {
         recipeRepository.deleteById(recipeId);
     }
 
